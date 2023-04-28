@@ -1,0 +1,3 @@
+book: "test_book/GPT-2.pdf"
+model_url: "http://180.184.77.4:8000"
+timeout: 300
