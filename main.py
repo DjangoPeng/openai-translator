@@ -1,55 +1,34 @@
+import sys
 import pdfplumber
-from PyPDF2 import PdfReader
-import argparse
 import requests
 import simplejson
+import yaml
+import argparse
 
-parser = argparse.ArgumentParser(description='Translate English PDF book to Chinese.')
-parser.add_argument('--book', type=str, help='PDF file to translate.')
-parser.add_argument('--model_url', type=str, default='http://127.0.0.1:8000', help='The URL of the translation model API.')
-parser.add_argument('--timeout', type=int, default=10, help='Timeout for the API request in seconds.')
+from ai_translator import Environment, ArgumentParser, ConfigLoader, Model, PDFTranslator
 
-args = parser.parse_args()
+if __name__ == "__main__":
+    environment = Environment()
 
-# 解析 PDF 文件
-book = args.book
-with pdfplumber.open(book) as pdf:
-    book_contents = []
-    for page in pdf.pages:
-        text = page.extract_text()
-        book_contents.append(text)
-        # print(text)
+    args = None
+    if not environment.is_jupyter():
+        argument_parser = ArgumentParser()
+        args = argument_parser.parse_arguments()
+        config_loader = ConfigLoader(args.config)
+    else:
+        config_loader = ConfigLoader('config.yaml')
 
-translated_contents = [] * len(book_contents)
-# 中英文翻译...
+    config = config_loader.load_config()
+    book = args.book if hasattr(args, 'book') and args.book else config['book']
+    model_url = args.model_url if hasattr(args, 'model_url') and args.model_url else config['model_url']
+    timeout = args.timeout if hasattr(args, 'timeout') and args.timeout else config['timeout']
 
-headers = {
-    'Content-Type': 'application/json;charset=utf-8'
-}
+    model = Model(model_url=model_url, timeout=timeout)
 
-for i, text in enumerate(book_contents):
-    prompt = f"翻译为中文：{text}"
-    data = {
-        "prompt": prompt,
-        "history": []
-    }
-    response = requests.post(args.model_url, json=data, timeout=args.timeout)
+    # 实例化 PDFTranslator 类，并调用 translate_pdf() 方法
+    translator = PDFTranslator(model)
+    translator.translate_pdf(book, pages=1)
 
-    try:
-        # response = requests.post(args.model_url, json=data, timeout=args.timeout)
-        print(f"response={response}")
-        response_dict = response.json()
-        print(f"response_dict={response_dict}")
-        translation = response_dict["completions"][0]["text"]
-        print(f"translation={translation}")
-        translated_contents[i] = translation
-    except simplejson.errors.JSONDecodeError:
-        print("Error: response is not valid JSON format.")
-        response_dict = {}
-
-
-print(translated_contents)
-
-# 合并翻译结果，写入新的 TXT 文件
-with open(f"{book[:-4]}_analyzed.txt", "w", encoding="utf-8") as f:
-    f.write("\n".join(translated_contents))
+    print("翻译完成！")
+    print("翻译成功率：", round(translator.success_rate, 4))
+    print("翻译状态：", translator.translate_status)
