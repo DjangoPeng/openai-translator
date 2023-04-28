@@ -2,3 +2,4 @@ pdfplumber
 PyPDF2
 simplejson
 requests
+PyYAML
