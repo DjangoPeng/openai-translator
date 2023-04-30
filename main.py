@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # 实例化 PDFTranslator 类，并调用 translate_pdf() 方法
     translator = PDFTranslator(model)
-    translator.translate_pdf(book, pages=1)
+    translator.translate_pdf(book)
 
     print("翻译完成！")
     print("翻译成功率：", round(translator.success_rate, 4))
