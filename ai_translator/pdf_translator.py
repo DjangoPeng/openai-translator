@@ -4,6 +4,8 @@ import requests
 import os
 import sys
 
+from .translator_exception import TranslatorException, PageOutOfRangeException
+
 class PDFTranslator:
     def __init__(self, model):
         self.model = model
