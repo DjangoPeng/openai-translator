@@ -1,3 +1,6 @@
+import requests
+import simplejson
+
 class TranslatorException:
     def __init__(self, e):
         self.exception = e
