@@ -1,3 +1,4 @@
-book: "test_book/GPT-2.pdf"
+# book: "test/pdf/The_Old_Man_of_the_Sea-W._W._Jacobs.pdf"
+book: "test/pdf/test.pdf"
 model_url: "http://180.184.77.4:8000"
 timeout: 300
