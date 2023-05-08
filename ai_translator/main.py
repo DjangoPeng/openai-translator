@@ -3,8 +3,9 @@ import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from translator import Environment, ArgumentParser, ConfigLoader, PDFTranslator
+from utils import Environment, ArgumentParser, ConfigLoader, LOG
 from model import Model
+from translator import PDFTranslator
 
 if __name__ == "__main__":
     environment = Environment()
@@ -28,6 +29,4 @@ if __name__ == "__main__":
     translator = PDFTranslator(model)
     translator.translate_pdf(file_path)
 
-    print("翻译完成！")
-    # print("翻译成功率：", round(translator.success_rate, 4))
-    # print("翻译状态：", translator.translate_status)
+    LOG.info("翻译完成！")
