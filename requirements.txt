@@ -5,3 +5,4 @@ PyYAML
 pillow
 reportlab
 pandas
+loguru

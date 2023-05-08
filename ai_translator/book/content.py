@@ -1,5 +1,6 @@
 import pandas as pd
 from enum import Enum, auto
+from PIL import Image as PILImage
 
 class ContentType(Enum):
     TEXT = auto()
@@ -24,8 +25,7 @@ class Content:
             return True
         elif self.content_type == ContentType.TABLE and isinstance(translation, list):
             return True
-        elif self.content_type == ContentType.IMAGE and isinstance(translation, dict):
-            # TODO: 在这里添加对图像类型的检查，例如：isinstance(translation, Image)
+        elif self.content_type == ContentType.IMAGE and isinstance(translation, PILImage.Image):
             return True
         return False
 
@@ -38,27 +38,32 @@ class TableContent(Content):
         if len(data) != len(df) or len(data[0]) != len(df.columns):
             raise ValueError("The number of rows and columns in the extracted table data and DataFrame object do not match.")
         
-        super().__init__(ContentType.TABLE, df, translation)
+        super().__init__(ContentType.TABLE, df)
 
     def set_translation(self, translation, status):
         if not isinstance(translation, str):
             raise ValueError(f"Invalid translation type. Expected str, but got {type(translation)}")
+        try:
 
-        # Convert the string to a list of lists
-        table_data = [row.strip().split('\t') for row in translation.strip().split('\n')]
+            # Convert the string to a list of lists
+            table_data = [row.strip().split() for row in translation.strip().split('\n')]
 
-        # Create a DataFrame from the table_data
-        translated_df = pd.DataFrame(table_data)
+            # Create a DataFrame from the table_data
+            translated_df = pd.DataFrame(table_data)
 
-        # Check if the dimensions of the original and translated DataFrames match
-        if self.original.shape != translated_df.shape:
-            raise ValueError(f"The dimensions of the original({self.original.shape}) and translated({translated_df.shape}) DataFrames do not match.")
+            # Check if the dimensions of the original and translated DataFrames match
+            if self.original.shape != translated_df.shape:
+                raise ValueError(f"The dimensions of the original({self.original.shape}) and translated({translated_df.shape}) DataFrames do not match.")
 
-        self.translation = translated_df
-        self.status = status
+            self.translation = translated_df
+            self.status = status
+        except Exception as e:
+            print(f"An error occurred during table translation: {e}")
+            self.translation = None
+            self.status = False
 
     def __str__(self):
-        return self.original.__str__()
+        return self.original.to_string(header=False, index=False)
 
     def iter_items(self, translated=False):
         target_df = self.translation if translated else self.original
@@ -70,5 +75,5 @@ class TableContent(Content):
         target_df = self.translation if translated else self.original
         target_df.at[row_idx, col_idx] = new_value
 
-    def get_original_data(self):
+    def get_original_as_str(self):
         return self.original.to_string(header=False, index=False)
