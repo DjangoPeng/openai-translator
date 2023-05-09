@@ -1,6 +1,7 @@
 import pandas as pd
 from enum import Enum, auto
 from PIL import Image as PILImage
+from utils import LOG
 
 class ContentType(Enum):
     TEXT = auto()
@@ -41,9 +42,9 @@ class TableContent(Content):
         super().__init__(ContentType.TABLE, df)
 
     def set_translation(self, translation, status):
-        if not isinstance(translation, str):
-            raise ValueError(f"Invalid translation type. Expected str, but got {type(translation)}")
         try:
+            if not isinstance(translation, str):
+                raise ValueError(f"Invalid translation type. Expected str, but got {type(translation)}")
 
             # Convert the string to a list of lists
             table_data = [row.strip().split() for row in translation.strip().split('\n')]
@@ -51,14 +52,10 @@ class TableContent(Content):
             # Create a DataFrame from the table_data
             translated_df = pd.DataFrame(table_data)
 
-            # Check if the dimensions of the original and translated DataFrames match
-            if self.original.shape != translated_df.shape:
-                raise ValueError(f"The dimensions of the original({self.original.shape}) and translated({translated_df.shape}) DataFrames do not match.")
-
             self.translation = translated_df
             self.status = status
         except Exception as e:
-            print(f"An error occurred during table translation: {e}")
+            LOG.error(f"An error occurred during table translation: {e}")
             self.translation = None
             self.status = False
 

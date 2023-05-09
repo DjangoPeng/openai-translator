@@ -36,15 +36,22 @@ class PDFParser:
 
                 # Handling text
                 if raw_text:
-                    text_content = Content(content_type=ContentType.TEXT, original=raw_text.strip())
+                    # Remove empty lines and leading/trailing whitespaces
+                    raw_text_lines = raw_text.splitlines()
+                    cleaned_raw_text_lines = [line.strip() for line in raw_text_lines if line.strip()]
+                    cleaned_raw_text = "\n".join(cleaned_raw_text_lines)
+
+                    text_content = Content(content_type=ContentType.TEXT, original=cleaned_raw_text)
                     page.add_content(text_content)
-                    LOG.info(f"[raw_text]\n {raw_text}")
+                    LOG.debug(f"[raw_text]\n {cleaned_raw_text}")
+
+
 
                 # Handling tables
                 if tables:
                     table = TableContent(tables)
                     page.add_content(table)
-                    LOG.info(f"[table]\n{table}")
+                    LOG.debug(f"[table]\n{table}")
 
                 book.add_page(page)
 

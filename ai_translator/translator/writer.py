@@ -1,13 +1,14 @@
 import os
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-from reportlab.lib.units import inch
+from reportlab.lib import colors, pagesizes, units
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+)
 
 from book import Book, ContentType
+from utils import LOG
 
 class Writer:
     def __init__(self):
@@ -16,7 +17,7 @@ class Writer:
     def save_translated_book(self, book: Book, output_file_path: str = None, file_format: str = "PDF"):
         if file_format.lower() == "pdf":
             self._save_translated_book_pdf(book, output_file_path)
-        elif file_format.lower() == "md":
+        elif file_format.lower() == "markdown":
             self._save_translated_book_markdown(book, output_file_path)
         else:
             raise ValueError(f"Unsupported file format: {file_format}")
@@ -24,6 +25,9 @@ class Writer:
     def _save_translated_book_pdf(self, book: Book, output_file_path: str = None):
         if output_file_path is None:
             output_file_path = book.pdf_file_path.replace('.pdf', f'_translated.pdf')
+
+        LOG.info(f"pdf_file_path: {book.pdf_file_path}")
+        LOG.info(f"开始翻译: {output_file_path}")
 
         # Register Chinese font
         font_path = "../fonts/simsun.ttc"  # 请将此路径替换为您的字体文件路径
@@ -33,7 +37,7 @@ class Writer:
         simsun_style = ParagraphStyle('SimSun', fontName='SimSun', fontSize=12, leading=14)
 
         # Create a PDF document
-        doc = SimpleDocTemplate(output_file_path, pagesize=letter)
+        doc = SimpleDocTemplate(output_file_path, pagesize=pagesizes.letter)
         styles = getSampleStyleSheet()
         story = []
 
@@ -70,13 +74,14 @@ class Writer:
 
         # Save the translated book as a new PDF file
         doc.build(story)
+        LOG.info(f"翻译完成: {output_file_path}")
 
     def _save_translated_book_markdown(self, book: Book, output_file_path: str = None):
         if output_file_path is None:
             output_file_path = book.pdf_file_path.replace('.pdf', f'_translated.md')
 
-        img_counter = 1  # 图像计数器，用于生成图像文件名
-
+        LOG.info(f"pdf_file_path: {book.pdf_file_path}")
+        LOG.info(f"开始翻译: {output_file_path}")
         with open(output_file_path, 'w', encoding='utf-8') as output_file:
             # Iterate over the pages and contents
             for page in book.pages:
@@ -92,18 +97,12 @@ class Writer:
                             table = content.translation
                             header = '| ' + ' | '.join(str(column) for column in table.columns) + ' |' + '\n'
                             separator = '| ' + ' | '.join(['---'] * len(table.columns)) + ' |' + '\n'
-                            body = '\n'.join(['| ' + ' | '.join(row) + ' |' for row in table.values.tolist()]) + '\n\n'
+                            # body = '\n'.join(['| ' + ' | '.join(row) + ' |' for row in table.values.tolist()]) + '\n\n'
+                            body = '\n'.join(['| ' + ' | '.join(str(cell) for cell in row) + ' |' for row in table.values.tolist()]) + '\n\n'
                             output_file.write(header + separator + body)
-
-                        elif content.content_type == ContentType.IMAGE:
-                            # Save the image to a file and add a link to it in the Markdown file
-                            img_filename = f"image_{img_counter}.png"
-                            img_file_path = os.path.join(os.path.dirname(output_file_path), img_filename)
-                            content.translation.save(img_file_path, "PNG")
-
-                            output_file.write(f"![Image {img_counter}]({img_filename})\n\n")
-                            img_counter += 1
 
                 # Add a page break (horizontal rule) after each page except the last one
                 if page != book.pages[-1]:
                     output_file.write('---\n\n')
+
+        LOG.info(f"翻译完成: {output_file_path}")

@@ -2,3 +2,4 @@
 book: "test/test.pdf"
 model_url: "http://180.184.77.4:8000"
 timeout: 300
+file_format: "markdown"

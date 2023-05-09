@@ -1,20 +1,7 @@
-import sys
-import requests
-import simplejson
-from typing import Optional
-from book import Book, Page, Content, ContentType, TableContent
-from model import Model
-from translator.pdf_parser import PDFParser
-from translator.writer import Writer
-from translator.prompt_maker import PromptMaker
-from utils import LOG
-
-class PDFTranslator:
-    def __init__(self, model: Model):
-        self.model = model
-        self.pdf_parser = PDFParser()
-        self.writer = Writer()
-        self.prompt_maker = PromptMaker()
+目标：
+1. 定义现在的 Model Class 为基类，构造函数参数不变，timeout 默认值设置为600。新增一个接口 make_request，由子类实现；
+2. 定义两个继承自 Model Class 的子类 GLMModel 和 OpenAIModel；
+3. 将 translate_pdf 方法从构造 prompt 到调用 _translate 方法整合，作为GLMModel 类的 make_request 方法；
 
     def translate_pdf(self, pdf_file_path: str, file_format: str = 'PDF', target_language: str = '中文', output_file_path: str = None, pages: Optional[int] = None):
         self.book = self.pdf_parser.parse_pdf(pdf_file_path, pages)
@@ -23,7 +10,11 @@ class PDFTranslator:
             for content_idx, content in enumerate(page.contents):
                 prompt = self.prompt_maker.translate_prompt(content, target_language)
                 LOG.info(f"[prompt]{prompt}")
-                translation, status = self.model.make_request(prompt)
+                payload = {
+                    "prompt": prompt,
+                    "history": []
+                }
+                translation, status = self._translate(payload)
                 LOG.info(f"[translation]{translation}")
                 
                 # Update the content in self.book.pages directly
@@ -48,3 +39,38 @@ class PDFTranslator:
         except Exception as e:
             raise Exception(f"发生了未知错误：{e}")
         return "", False
+
+4. OpenAIModel 类的 make_request 方法与GLMModel 类的目标一致，构造 requests 参考以下代码示例：
+
+Example：
+    import os
+    import openai
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    openai.Completion.create(
+    model="text-davinci-003",
+    prompt="Say this is a test",
+    max_tokens=7,
+    temperature=0
+    )
+
+Response：
+    {
+    "id": "cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7",
+    "object": "text_completion",
+    "created": 1589478378,
+    "model": "text-davinci-003",
+    "choices": [
+        {
+        "text": "\n\nThis is indeed a test",
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "length"
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 5,
+        "completion_tokens": 7,
+        "total_tokens": 12
+    }
+    }
+
