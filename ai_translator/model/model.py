@@ -1,12 +1,8 @@
-from enum import Enum, auto
-
-class ModelType(Enum):
-    ChatGLM = auto()
-    GPT_3 = auto()
-    GPT_3_5 = auto()
 
 class Model:
-    def __init__(self, model_url, timeout, model_type=ModelType.ChatGLM):
+    def __init__(self, model_url: str, timeout: int = 600):
         self.model_url = model_url
         self.timeout = timeout
-        self.model_type = model_type
+
+    def make_request(self, prompt):
+        raise NotImplementedError("子类必须实现 make_request 方法")

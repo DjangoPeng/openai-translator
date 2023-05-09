@@ -6,3 +6,4 @@ pillow
 reportlab
 pandas
 loguru
+openai

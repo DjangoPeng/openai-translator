@@ -19,14 +19,13 @@ if __name__ == "__main__":
         config_loader = ConfigLoader('config.yaml')
 
     config = config_loader.load_config()
-    file_path = args.book if hasattr(args, 'book') and args.book else config['book']
+    pdf_file_path = args.book if hasattr(args, 'book') and args.book else config['book']
     model_url = args.model_url if hasattr(args, 'model_url') and args.model_url else config['model_url']
     timeout = args.timeout if hasattr(args, 'timeout') and args.timeout else config['timeout']
+    file_format = args.file_format if hasattr(args, 'file_format') and args.file_format else config['file_format']
 
     model = Model(model_url=model_url, timeout=timeout)
 
     # 实例化 PDFTranslator 类，并调用 translate_pdf() 方法
     translator = PDFTranslator(model)
-    translator.translate_pdf(file_path)
-
-    LOG.info("翻译完成！")
+    translator.translate_pdf(pdf_file_path, file_format)

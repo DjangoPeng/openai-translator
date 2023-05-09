@@ -7,6 +7,7 @@ class ArgumentParser:
         self.parser.add_argument('--book', type=str, help='PDF file to translate.')
         self.parser.add_argument('--model_url', type=str, help='The URL of the translation model API.')
         self.parser.add_argument('--timeout', type=int, help='Timeout for the API request in seconds.')
+        self.parser.add_argument('--file_format', type=str, help='The file format of translated book. Now supporting PDF and Markdown')
 
     def parse_arguments(self):
         args = self.parser.parse_args()
