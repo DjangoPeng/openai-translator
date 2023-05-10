@@ -4,6 +4,10 @@ import simplejson
 from model import Model
 
 class GLMModel(Model):
+    def __init__(self, model_url: str, timeout: int):
+        self.model_url = model_url
+        self.timeout = timeout
+
     def make_request(self, prompt):
         try:
             payload = {
