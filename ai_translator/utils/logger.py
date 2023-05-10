@@ -16,16 +16,12 @@ class Logger:
 
         # Add console handler with a specific log level
         level = "DEBUG" if debug else "INFO"
-        console_format = '[{level}][{time:YYYY-MM-DD HH:mm:ss}][{module}] {message}'
-        logger.add(sys.stdout, level=level, format=console_format)
-
+        logger.add(sys.stdout, level=level)
         # Add file handler with a specific log level and timed rotation
-        file_format = '[{level}][{time:YYYY-MM-DD HH:mm:ss}][{module}] {message}'
-        logger.add(log_file_path, rotation=ROTATION_TIME, level="DEBUG", format=file_format)
-
+        logger.add(log_file_path, rotation=ROTATION_TIME, level="DEBUG")
         self.logger = logger
 
-LOG = Logger().logger
+LOG = Logger(debug=True).logger
 
 if __name__ == "__main__":
     log = Logger().logger

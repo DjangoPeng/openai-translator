@@ -161,3 +161,4 @@ cython_debug/
 
 test/*_translated*
 logs/*
+code_prompt.txt
