@@ -14,14 +14,14 @@ if __name__ == "__main__":
 
     config = config_loader.load_config()
 
-    if args.model_type == "GLMModel":
-        timeout = args.timeout if args.timeout else config['GLMModel']['timeout']
-        model_url = args.model_url if args.model_url else config['GLMModel']['model_url']
-        model = GLMModel(model_url=model_url, timeout=timeout)
-    elif args.model_type == "OpenAIModel":
+    if args.model_type == "OpenAIModel":
         model_name = args.openai_model if args.openai_model else config['OpenAIModel']['model']
         api_key = args.openai_api_key if args.openai_api_key else config['OpenAIModel']['api_key']
         model = OpenAIModel(model=model_name, api_key=api_key)
+    elif args.model_type == "GLMModel":
+        timeout = args.timeout if args.timeout else config['GLMModel']['timeout']
+        model_url = args.model_url if args.model_url else config['GLMModel']['model_url']
+        model = GLMModel(model_url=model_url, timeout=timeout)
     else:
         raise ValueError("Invalid model_type specified. Please choose either 'GLMModel' or 'OpenAIModel'.")
 
